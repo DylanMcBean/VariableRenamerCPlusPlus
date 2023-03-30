@@ -31,7 +31,7 @@ private:
     QMap<QString, QString> m_variables;
     QMap<QString, QList<QString>> m_variableLines;
     Ui::MainWindow *ui;
-    int m_current_varible_index = 0;
+    int m_current_variable_index = 0;
     QStringList m_cpp_files;
 };
 #endif // MAINWINDOW_H

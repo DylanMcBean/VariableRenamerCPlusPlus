@@ -21,13 +21,13 @@ MainWindow::~MainWindow()
 void MainWindow::SetVarText()
 {
     // Set variable count
-    QString text = QString::number(m_current_varible_index + 1) + " / " + QString::number(m_variables.size());
+    QString text = QString::number(m_current_variable_index + 1) + " / " + QString::number(m_variables.size());
     ui->label_var_count->setText(text);
 
     // Set Starter Variable
     if (!m_variables.isEmpty()) {
         // Get the first variable and its lines
-        QString currentVar = m_variables.keys().at(m_current_varible_index);
+        QString currentVar = m_variables.keys().at(m_current_variable_index);
         QList<QString> lines = m_variableLines.value(currentVar);
 
         // Set the text edits
@@ -102,7 +102,7 @@ void MainWindow::on_actionLoad_triggered()
     }
     m_variableLines = variableLines;
     m_variables = variables;
-    m_current_varible_index = 0;
+    m_current_variable_index = 0;
 
     SetVarText();
 }
@@ -110,17 +110,17 @@ void MainWindow::on_actionLoad_triggered()
 void MainWindow::on_pushButton_next_clicked()
 {
     if (!m_variables.isEmpty()) {
-        int initial_index = m_current_varible_index;
+        int initial_index = m_current_variable_index;
         if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
             // Shift key is pressed, keep incrementing the variable index
             do {
-                m_current_varible_index = (m_current_varible_index + 1) % m_variables.size();
+                m_current_variable_index = (m_current_variable_index + 1) % m_variables.size();
                 SetVarText();
                 on_textEdit_var_after_textChanged(); // call the function inside the loop
-            } while (ui->textEdit_var_conflict_before->toPlainText() == "" && m_current_varible_index != initial_index);
+            } while (ui->textEdit_var_conflict_before->toPlainText() == "" && m_current_variable_index != initial_index);
         } else {
             // Shift key is not pressed, increment variable index once
-            m_current_varible_index = (m_current_varible_index + 1) % m_variables.size();
+            m_current_variable_index = (m_current_variable_index + 1) % m_variables.size();
             SetVarText();
         }
     }
@@ -129,17 +129,17 @@ void MainWindow::on_pushButton_next_clicked()
 void MainWindow::on_pushButton_back_clicked()
 {
     if (!m_variables.isEmpty()) {
-        int initial_index = m_current_varible_index;
+        int initial_index = m_current_variable_index;
         if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
             // Shift key is pressed, keep decrementing the variable index
             do {
-                m_current_varible_index = (m_current_varible_index + m_variables.size() - 1) % m_variables.size();
+                m_current_variable_index = (m_current_variable_index + m_variables.size() - 1) % m_variables.size();
                 SetVarText();
                 on_textEdit_var_after_textChanged(); // call the function inside the loop
-            } while (ui->textEdit_var_conflict_before->toPlainText() == "" && m_current_varible_index != initial_index);
+            } while (ui->textEdit_var_conflict_before->toPlainText() == "" && m_current_variable_index != initial_index);
         } else {
             // Shift key is not pressed, decrement variable index once
-            m_current_varible_index = (m_current_varible_index + m_variables.size() - 1) % m_variables.size();
+            m_current_variable_index = (m_current_variable_index + m_variables.size() - 1) % m_variables.size();
             SetVarText();
         }
     }
