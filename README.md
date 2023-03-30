@@ -8,7 +8,9 @@ Consider the following scenario:
 You have two variables:
 
 testBool
+
 testBool2
+
 Now, you decide to rename testBool2 to testBool without realizing that testBool already exists. This may lead to warnings or even worse, the program may compile successfully but break during runtime. This issue can be exacerbated in larger files with thousands of lines and hundreds or thousands of variables to keep track of.
 
 Variable Renamer is here to help you avoid such conflicts.
