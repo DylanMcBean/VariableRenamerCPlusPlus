@@ -27,7 +27,7 @@ git clone https://github.com/DylanMcBean/VariableRenamerCPlusPlus.git
 Once you have cloned the repository, open the project in Qt.
 
 ## Download a Release Build
-Navigate to the Releases page of the repository and download the latest release build for your platform. Extract the archive and run the executable.
+Navigate to the [Releases](https://github.com/DylanMcBean/VariableRenamerCPlusPlus/releases) page of the repository and download the latest release build for your platform. Extract the archive and run the executable.
 
 ---
 # Usage
