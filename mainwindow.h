@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTextEdit> // Include this line
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,6 +18,7 @@ public:
     void CheckForConflicts();
     void CleanUp();
     bool IsConflict();
+    void setTextWithHighlightedVar(QTextEdit *textEdit, const QString &text, const QString &currentVar, const QColor &highlightColor);
     ~MainWindow();
 
 private slots:
