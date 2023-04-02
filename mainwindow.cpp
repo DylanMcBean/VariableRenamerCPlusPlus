@@ -18,6 +18,30 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setTextWithHighlightedVar(QTextEdit *textEdit, const QString &text, const QString &currentVar, const QColor &highlightColor) {
+    QTextDocument *document = textEdit->document();
+    document->setPlainText(text);
+
+    QTextCursor cursor(document);
+    QTextCharFormat normalFormat;
+    QTextCharFormat highlightedFormat;
+    highlightedFormat.setForeground(highlightColor);
+    highlightedFormat.setFontWeight(QFont::Bold);
+
+    QTextDocument::FindFlags findFlags = QTextDocument::FindCaseSensitively | QTextDocument::FindWholeWords; // Add this line to set the find flags
+
+    while (!cursor.isNull() && !cursor.atEnd()) {
+        cursor = document->find(currentVar, cursor, findFlags); // Modify this line to include findFlags
+
+        if (!cursor.isNull()) {
+            cursor.mergeCharFormat(highlightedFormat);
+            cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, currentVar.length());
+        }
+    }
+
+    textEdit->setTextCursor(cursor);
+}
+
 void MainWindow::SetVarText()
 {
     // Set variable count
@@ -34,30 +58,16 @@ void MainWindow::SetVarText()
         ui->label_var->setText("\"" + currentVar + "\" occurences");
         ui->textEdit_var_before->setText(currentVar);
         ui->textEdit_var_after->setText(m_variables.value(currentVar));
-        ui->textEdit_var_lines->setText(lines.join("\n"));
+
+        // Use the custom function to set the text and highlight currentVar
+        QColor highlightColor("cyan"); // Change the color as needed
+        setTextWithHighlightedVar(ui->textEdit_var_lines, lines.join("\n"), currentVar, highlightColor);
     }
 }
 
 
 void MainWindow::on_actionLoad_triggered()
 {
-    QSet<QString> bannedWords = {
-        "NULL", "true", "false", "nullptr", "__FILE__", "__LINE__",
-        "int", "float", "double", "char", "bool", "void",
-        "short", "long", "signed", "unsigned",
-        "wchar_t", "char16_t", "char32_t",
-        "size_t", "ptrdiff_t",
-        "auto", "this",
-        // control structures
-        "if", "else", "switch", "case", "default",
-        // loops
-        "for", "while", "do",
-        // functions
-        "return", "throw"
-    };
-
-    QRegularExpression pattern("((?<!\\d|:|\\.|>)\\b[A-Za-z_]\\w*)\\b(?: ==?|,|;| ?\\))");
-
     QStringList fileNames = QFileDialog::getOpenFileNames(
         this,
         tr("Select one or more files to open"), "", tr("All files (*.*);;Text files (*.txt)"));
@@ -68,38 +78,62 @@ void MainWindow::on_actionLoad_triggered()
 
     m_cpp_files = fileNames;
 
+    QSet<QString> uniqueVariables;
+    QString preProcessorLines = "^#.*$";
+    QString strings = "(?:\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'|`(?:[^`\\\\]|\\\\.)*`)";
+    QString multiLineComments = "/\\*([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/";
+    QString singleLineComments = "\\s*//.*$";
+    QString keywords = "\\b(?!alignas|alignof|and|and_eq|asm|atomic_cancel|atomic_commit|atomic_noexcept|auto|bitand|bitor|bool|break|case|catch|char|char8_t|char16_t|char32_t|class|compl|concept|const|consteval|constexpr|constinit|const_cast|continue|co_await|co_return|co_yield|decltype|default|delete|do|double|dynamic_cast|else|enum|explicit|export|extern|false|float|for|friend|goto|if|inline|int|long|mutable|namespace|new|noexcept|not|not_eq|nullptr|operator|or|or_eq|private|protected|public|reflexpr|register|reinterpret_cast|requires|return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|synchronized|template|this|thread_local|throw|true|try|typedef|typeid|typename|union|unsigned|using|virtual|void|volatile|wchar_t|while|xor|xor_eq)\\b[a-zA-Z_]\\w*\\b";
+
+    for (const QString &fileName : fileNames) {
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            QString content = in.readAll();
+            file.close();
+
+            content.replace(QRegularExpression(preProcessorLines, QRegularExpression::MultilineOption), " ");
+            content.replace(QRegularExpression(strings), " ");
+            content.replace(QRegularExpression(multiLineComments), " ");
+            content.replace(QRegularExpression(singleLineComments, QRegularExpression::MultilineOption), " ");
+
+            QRegularExpression reKeywords(keywords);
+            QRegularExpressionMatchIterator it = reKeywords.globalMatch(content);
+            while (it.hasNext()) {
+                QRegularExpressionMatch match = it.next();
+                uniqueVariables.insert(match.captured(0));
+            }
+        }
+    }
+
     QMap<QString, QList<QString>> variableLines;
     QMap<QString, QString> variables;
 
-    foreach (const QString &fileName, fileNames) {
+    for (const QString &fileName : fileNames) {
         QFile file(fileName);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QMessageBox::warning(this, tr("Error"), tr("Could not open file: ") + fileName);
-            return;
-        }
-        QTextStream in(&file);
-        int lineNumber = 0;
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            ++lineNumber;
-            QRegularExpressionMatchIterator matchIter = pattern.globalMatch(line);
-            while (matchIter.hasNext()) {
-                QRegularExpressionMatch match = matchIter.next();
-                QString variable = match.captured(1);
-                if (!bannedWords.contains(variable)) {
-                    variables[variable] = variable;
-                    if (variableLines.contains(variable)) {
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            QString content = in.readAll();
+            QStringList lines = content.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+            file.close();
+
+            for (const QString &variable : uniqueVariables) {
+                QRegularExpression reVariable("\\b" + QRegularExpression::escape(variable) + "\\b");
+                for (const QString &line : lines) {
+                    if (reVariable.match(line).hasMatch()) {
+                        if (!variables.contains(variable)) {
+                            variables.insert(variable, variable);
+                        }
+                        if (!variableLines.contains(variable)) {
+                            variableLines.insert(variable, QList<QString>());
+                        }
                         variableLines[variable].append(line);
-                    } else {
-                        QList<QString> lines;
-                        lines.append(line);
-                        variableLines.insert(variable, lines);
                     }
                 }
             }
         }
-        file.close();
     }
+
     m_variableLines = variableLines;
     m_variables = variables;
     m_current_variable_index = 0;

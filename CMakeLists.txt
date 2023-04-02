@@ -6,11 +6,14 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+
+# Find the Clang library
+find_library(CLANG_LIBRARY clang)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -42,7 +45,8 @@ else()
     endif()
 endif()
 
-target_link_libraries(VariableChangerGui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+# Link against the Clang library
+target_link_libraries(VariableChangerGui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${CLANG_LIBRARY})
 
 set_target_properties(VariableChangerGui PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
