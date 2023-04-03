@@ -1,8 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "filelinesmap.h"
+
 #include <QMainWindow>
-#include <QTextEdit> // Include this line
+#include <QTextEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,8 +20,11 @@ public:
     void CheckForConflicts();
     void CleanUp();
     bool IsConflict();
-    void setTextWithHighlightedVar(QTextEdit *textEdit, const QString &text, const QString &currentVar, const QColor &highlightColor);
+    void setTextWithHighlightedVar(QTextEdit *textEdit, const QString &text, const QString &currentVar);
     ~MainWindow();
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event);
 
 private slots:
     void on_actionLoad_triggered();
@@ -35,5 +40,6 @@ private:
     Ui::MainWindow *ui;
     int m_current_variable_index = 0;
     QStringList m_cpp_files;
+    QMap<QString, QList<QPair<int, QString>>> m_fileLinesMapping;
 };
 #endif // MAINWINDOW_H

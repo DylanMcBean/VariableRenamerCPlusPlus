@@ -12,9 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-# Find the Clang library
-find_library(CLANG_LIBRARY clang)
-
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -22,22 +19,23 @@ set(PROJECT_SOURCES
         mainwindow.ui
 )
 
+# Add the qss file to the project
+set(QSS_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Stylesheets/dark_mode.qss
+    ${CMAKE_CURRENT_SOURCE_DIR}/Stylesheets/dark_mode_v2.qss
+    ${CMAKE_CURRENT_SOURCE_DIR}/Stylesheets/dark_mode_modern.qss
+)
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(VariableChangerGui
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET VariableChangerGui APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
         add_library(VariableChangerGui SHARED
             ${PROJECT_SOURCES}
         )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(VariableChangerGui
             ${PROJECT_SOURCES}
@@ -45,8 +43,7 @@ else()
     endif()
 endif()
 
-# Link against the Clang library
-target_link_libraries(VariableChangerGui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${CLANG_LIBRARY})
+target_link_libraries(VariableChangerGui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 set_target_properties(VariableChangerGui PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
@@ -55,6 +52,11 @@ set_target_properties(VariableChangerGui PROPERTIES
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
+
+# Copy the qss file to the build folder
+foreach(QSS_FILE ${QSS_FILES})
+    configure_file(${QSS_FILE} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+endforeach()
 
 install(TARGETS VariableChangerGui
     BUNDLE DESTINATION .
