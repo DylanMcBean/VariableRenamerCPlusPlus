@@ -1,0 +1,76 @@
+/* Add this code to your MainWindow constructor or initialization function */
+QMainWindow {
+    background-color: #323232;
+}
+
+QWidget {
+    background-color: #323232;
+    color: #FFFFFF;
+}
+
+QTabWidget::pane {
+    border: 1px solid #5E5E5E;
+}
+
+QTabBar::tab {
+    background-color: #4C4C4C;
+    border: 1px solid #5E5E5E;
+    padding: 5px;
+}
+
+QTabBar::tab:selected {
+    background-color: #1E90FF;
+}
+
+QTextEdit {
+    background-color: #2E2E2E;
+    color: #FFFFFF;
+    border: 1px solid #5E5E5E;
+}
+
+QPushButton {
+    background-color: #3A3A3A;
+    color: #FFFFFF;
+    border: 1px solid #5E5E5E;
+    padding: 5px;
+}
+
+QPushButton:hover {
+    background-color: #1E90FF;
+}
+
+QPushButton:pressed {
+    background-color: #104C7D;
+}
+
+QLabel {
+    color: #FFFFFF;
+}
+
+QMenuBar {
+    background-color: #4C4C4C;
+    color: #FFFFFF;
+}
+
+QMenuBar::item {
+    background-color: transparent;
+}
+
+QMenuBar::item:selected {
+    background-color: #1E90FF;
+}
+
+QMenu {
+    background-color: #4C4C4C;
+    color: #FFFFFF;
+    border: 1px solid #5E5E5E;
+}
+
+QMenu::item:selected {
+    background-color: #1E90FF;
+}
+
+QStatusBar {
+    background-color: #4C4C4C;
+    color: #FFFFFF;
+}
